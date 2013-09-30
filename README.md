@@ -35,6 +35,6 @@ HXGame
 
 ------------------
 
-[[涵曦个人博客]][[http://www.hanxi.info/]]
+<a target="_blank" href="http://www.hanxi.info/">涵曦个人博客</a>
 
 ------------------
