@@ -1,0 +1,1 @@
+float   clampf(float value, float min_inclusive, float max_inclusive);

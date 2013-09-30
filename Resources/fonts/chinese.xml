@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+    <key>chinese</key>
+    <string>关卡</string>
+    <key>step</key>
+    <string>步</string>
+    <key>beststep</key>
+    <string>最佳成绩：</string>
+    <key>locked</key>
+    <string>未解锁，继续努力</string>
+    <key>method</key>
+    <string>你可以开启所有关卡来体验此关卡</string>
+</dict>
+</plist>
