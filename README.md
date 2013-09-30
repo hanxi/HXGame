@@ -1,7 +1,7 @@
 HXGame
 ======
 
-## 目的：使用cocos2dx引擎实现一个手机游戏的基本框架
+## 目的：使用cocos2dx实现一个手机游戏的基本框架
 
 * 使用cocos2dx 3.0 alpha
 
