@@ -1,6 +1,7 @@
 HXGame
 ======
 
+
 ## 目的：使用cocos2dx实现一个手机游戏的基本框架
 
 * 使用cocos2dx 3.0 alpha
@@ -31,3 +32,9 @@ HXGame
 * 架构思想来自 <a target="_blank" href="http://guan-zhong-dao-ke.blog.163.com/blog/static/465446372012031114657379/">关中刀客</a>
 * 框架结构图<br>
   ![image](https://github.com/hanxi/hanxi.github.com/raw/master/assets/media/2013-09-30-original-cocos2dx-game-frame.1.jpg)
+
+------------------
+
+[[涵曦个人博客]][[http://www.hanxi.info/]]
+
+------------------
