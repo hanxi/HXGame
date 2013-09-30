@@ -29,5 +29,5 @@ HXGame
 
 ## 框架设计来源
 * 架构思想来自 <a target="_blank" href="http://guan-zhong-dao-ke.blog.163.com/blog/static/465446372012031114657379/">关中刀客</a>
-* 框架结构图
-  ![image](https://github.com/hanxi/hanxi.github.com/assets/media/2013-09-30-original-cocos2dx-game-frame.1.jpg)
+* 框架结构图<br>
+  ![image](https://github.com/hanxi/hanxi.github.com/raw/master/assets/media/2013-09-30-original-cocos2dx-game-frame.1.jpg)
