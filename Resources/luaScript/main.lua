@@ -30,6 +30,7 @@ local function main()
     collectgarbage("setstepmul", 5000)
 
     local sceneGame = ParticleTest()
+    local scense = capi_getscene
 
     -- run
     CCDirector:getInstance():runWithScene(sceneGame)

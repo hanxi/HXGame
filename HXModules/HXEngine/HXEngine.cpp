@@ -56,6 +56,7 @@ int capi_restartLuaEngine() {
     Director::getInstance()->getScheduler()->scheduleSelector(
         schedule_selector(HXLuaEngine::restart),
         obj,0,false,0,1);
+    obj->release();
     return 0;
 }
 

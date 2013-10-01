@@ -23,7 +23,7 @@ test:
 hxmodules:
 	$(MAKE) -C ../HXModules/proj.$(PLATFORM)
 
-$(TARGET): $(OBJECTS) $(STATICLIBS) $(COCOS_LIBS) $(CORE_MAKEFILE_LIST)
+$(TARGET): $(OBJECTS) $(STATICLIBS) $(COCOS_LIBS) $(CORE_MAKEFILE_LIST) hxmodules
 	@echo $(PLATFORM)
 	@mkdir -p $(@D)
 	$(LOG_LINK)$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(SHAREDLIBS) $(STATICLIBS) $(LIBS)
