@@ -1,3 +1,13 @@
 
-int capi_restartLuaEngine();
+long HXMillisecondNow();
+CCRenderTexture* HXSaveScreenToRenderTexture();
+
+class HXEngine : public CCObject
+{
+    static HXEngine* getInstance();
+    void init();
+    int restartLuaEngine();
+    CCScene* getScene() const;
+};
+
 

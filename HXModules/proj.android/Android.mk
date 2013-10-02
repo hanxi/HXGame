@@ -6,6 +6,7 @@ LOCAL_MODULE	:= hxmodules_static
 LOCAL_MODULE_FILENAME := libhxmodules
 
 LOCAL_SRC_FILES := ../HXEngine/HXEngine.cpp \
+	../HXUtil/HXUtil.cpp \
 	../HXLuaModules.cpp
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/.. \
@@ -14,6 +15,7 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/.. \
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/ \
 					$(LOCAL_PATH)/../ \
 					$(LOCAL_PATH)/../HXEngine \
+					$(LOCAL_PATH)/../HXUtil \
 
 LOCAL_WHOLE_STATIC_LIBRARIES := cocos2dx_static
 LOCAL_WHOLE_STATIC_LIBRARIES += cocosdenshion_static

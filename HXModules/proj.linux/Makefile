@@ -1,6 +1,8 @@
 TARGET = libhxmodules.so
 PLATFORM ?= linux
 
+DEBUG=1
+
 COCOS_ROOT = ../../libs
 PROJ_ROOT = ../..
 INCLUDES += \
@@ -15,6 +17,7 @@ INCLUDES += \
 
 
 SOURCES = ../HXEngine/HXEngine.cpp \
+	../HXUtil/HXUtil.cpp \
 	../HXLuaModules.cpp
 
 SHAREDLIBS += -lcocos2d -lcocosdenshion -llua

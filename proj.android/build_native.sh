@@ -115,4 +115,3 @@ fi
 
 ## 打包apk
 ant debug
-ant release

@@ -17,7 +17,3 @@ function __G__TRACKBACK__(msg)
     cclog("----------------------------------------")
 end
 
-function cclog(...)
-    CCLuaLog(string.format(...))
-end
-

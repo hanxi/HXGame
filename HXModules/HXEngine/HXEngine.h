@@ -16,18 +16,47 @@ extern "C" {
 }
 
 #include "cocos2d.h"
+#include "HXMacros.h"
 
-class HXLuaEngine : public cocos2d::Object {
+NS_HX_BEGIN
+
+class HXEngine : public cocos2d::Object {
 public:
-    void restart(float);
-    static int execute();
+    int startLuaEngine();
 
-    HXLuaEngine(void)
-    {
+    int restartLuaEngine();
+
+    static HXEngine* getInstance() {
+        if (!_pHXEngine)
+        {
+            _pHXEngine = new HXEngine();
+        }
+        return _pHXEngine;
     }
+
+    static void destroyInstance() {
+        CC_SAFE_RELEASE_NULL(_pHXEngine);
+    }
+
+    cocos2d::Scene* getScene() const {
+        return _pHXScene;
+    }
+    void init();
+
+private:
+    static HXEngine* _pHXEngine;
+    cocos2d::Scene* _pHXScene;
+
+    HXEngine(void) {
+        _pHXScene = cocos2d::Scene::create();
+    }
+
+    ~HXEngine(void) {
+        CC_SAFE_RELEASE_NULL(_pHXScene);
+    }
+    void restartLuaEngineSel(float dt=0);
 };
 
-int capi_restartLuaEngine();
-
+NS_HX_END
 #endif // _HX_ENGINE_H_
 

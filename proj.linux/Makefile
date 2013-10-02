@@ -1,6 +1,8 @@
 EXECUTABLE = HXGame
 PLATFORM ?= linux
 
+DEBUG=1
+
 PROJ_ROOT = ..
 COCOS_ROOT = ../libs
 INCLUDES =	-I../ -I../Classes -I$(COCOS_ROOT)/CocosDenshion/include \
@@ -20,6 +22,7 @@ test:
 	@echo $(DEFINES)
 	@echo $(COCOS_ROOT)/cocos2dx/proj.linux/cocos2dx.mk
 
+all:
 hxmodules:
 	$(MAKE) -C ../HXModules/proj.$(PLATFORM)
 

@@ -21,6 +21,7 @@ AppDelegate::~AppDelegate()
     // end simple audio engine here, or it may crashed on win32
     SimpleAudioEngine::getInstance()->end();
     ScriptEngineManager::destroyInstance();
+    hx::HXEngine::destroyInstance();
 }
 
 bool AppDelegate::applicationDidFinishLaunching()
@@ -31,13 +32,13 @@ bool AppDelegate::applicationDidFinishLaunching()
 
     EGLView::getInstance()->setDesignResolutionSize(480, 320, ResolutionPolicy::NO_BORDER);
 
-    // turn on display FPS
-    pDirector->setDisplayStats(true);
+    // turn off display FPS
+    pDirector->setDisplayStats(false);
 
     // set FPS. the default value is 1.0/60 if you don't call this
     pDirector->setAnimationInterval(1.0 / 60);
 
-    if (HXLuaEngine::execute()) {
+    if (hx::HXEngine::getInstance()->startLuaEngine()) {
         cout << "HXGame:debug:game OK!" << endl;
     }
     else {

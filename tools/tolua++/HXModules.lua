@@ -63,7 +63,10 @@ extern "C" {
 #include "tolua_fix.h"
 }
 
-#include "HXModules.h"]])
+#include "HXModules.h"
+using namespace hx;
+using namespace hxutil;
+using namespace cocos2d;]])
 
     WRITE(result)
 end
