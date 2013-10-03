@@ -42,6 +42,9 @@ public:
         return _pHXScene;
     }
     void init();
+    void exitGame() {
+        cocos2d::Director::getInstance()->end();
+    }
 
 private:
     static HXEngine* _pHXEngine;

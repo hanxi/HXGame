@@ -20,4 +20,5 @@ function include(module)
 end
 
 include("util")
+include("logic")
 

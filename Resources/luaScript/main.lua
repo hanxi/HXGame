@@ -29,6 +29,9 @@ local function main()
     collectgarbage("setpause", 100)
     collectgarbage("setstepmul", 5000)
 
+    CCDirector:getInstance():runWithScene(CreateSplashScene())
+
+--[[
     local engine = HXEngine:getInstance()
     engine:init()
 
@@ -63,6 +66,7 @@ local function main()
     CCDirector:getInstance():runWithScene(scene)
     --
     -- engine:restartLuaEngine()
+]]--
 end
 
 xpcall(main, __G__TRACKBACK__)

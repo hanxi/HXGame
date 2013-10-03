@@ -1,6 +1,6 @@
 /*
 ** Lua binding: HXModules
-** Generated automatically by tolua++-1.0.92 on Wed Oct  2 23:13:31 2013.
+** Generated automatically by tolua++-1.0.92 on Fri Oct  4 03:15:22 2013.
 */
 
 /*=============================================================================
@@ -143,6 +143,37 @@ static int tolua_HXModules_HXEngine_init00(lua_State* tolua_S)
 }
 #endif //#ifndef TOLUA_DISABLE
 
+/* method: exitGame of class  HXEngine */
+#ifndef TOLUA_DISABLE_tolua_HXModules_HXEngine_exitGame00
+static int tolua_HXModules_HXEngine_exitGame00(lua_State* tolua_S)
+{
+#ifndef TOLUA_RELEASE
+ tolua_Error tolua_err;
+ if (
+     !tolua_isusertype(tolua_S,1,"HXEngine",0,&tolua_err) ||
+     !tolua_isnoobj(tolua_S,2,&tolua_err)
+ )
+  goto tolua_lerror;
+ else
+#endif
+ {
+  HXEngine* self = (HXEngine*)  tolua_tousertype(tolua_S,1,0);
+#ifndef TOLUA_RELEASE
+  if (!self) tolua_error(tolua_S,"invalid 'self' in function 'exitGame'", NULL);
+#endif
+  {
+   self->exitGame();
+  }
+ }
+ return 0;
+#ifndef TOLUA_RELEASE
+ tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'exitGame'.",&tolua_err);
+ return 0;
+#endif
+}
+#endif //#ifndef TOLUA_DISABLE
+
 /* method: restartLuaEngine of class  HXEngine */
 #ifndef TOLUA_DISABLE_tolua_HXModules_HXEngine_restartLuaEngine00
 static int tolua_HXModules_HXEngine_restartLuaEngine00(lua_State* tolua_S)
@@ -220,6 +251,7 @@ TOLUA_API int tolua_HXModules_open (lua_State* tolua_S)
   tolua_beginmodule(tolua_S,"HXEngine");
    tolua_function(tolua_S,"getInstance",tolua_HXModules_HXEngine_getInstance00);
    tolua_function(tolua_S,"init",tolua_HXModules_HXEngine_init00);
+   tolua_function(tolua_S,"exitGame",tolua_HXModules_HXEngine_exitGame00);
    tolua_function(tolua_S,"restartLuaEngine",tolua_HXModules_HXEngine_restartLuaEngine00);
    tolua_function(tolua_S,"getScene",tolua_HXModules_HXEngine_getScene00);
   tolua_endmodule(tolua_S);

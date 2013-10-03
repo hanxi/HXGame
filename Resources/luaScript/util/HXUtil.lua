@@ -17,3 +17,14 @@ function __G__TRACKBACK__(msg)
     cclog("----------------------------------------")
 end
 
+CCLuaLog = function(...)
+    print(...)
+end
+
+--合并集合,根据key值
+function HXUtilMergeSet(set1,set2)
+    for k,v in pairs(set2) do
+        set1[k] = v
+    end
+end
+
