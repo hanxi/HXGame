@@ -1,3 +1,13 @@
+--[[=============================================================================
+#     FileName: HXGameScene.lua
+#         Desc: 游戏场景及动画
+#       Author: hanxi
+#        Email: hanxi.com@gmail.com
+#     HomePage: http://hanxi.cnblogs.com
+#      Version: 0.0.1
+#   LastChange: 2013-10-04 21:28:54
+#      History:
+=============================================================================]]
 --[[
 Copyright (c) 2013 crosslife <hustgeziyang@gmail.com>
 
@@ -21,9 +31,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
---require "Script/Logic/GameBoardLogic"
---require "Script/Sprite/GameIcon"
-
 local scene = nil
 
 local curSelectTag = nil
@@ -34,34 +41,26 @@ local MATCH_TAG = 30
 local SELECT_TAG = 40
 
 local REMOVED_TAG = 20000
-local FALLING_TAG = 30000
+
+local isFallIngTbl = {}
 
 local isTouching = false
-local isMoving = false
 local isRefreshing = false
 
-local touchStartPoint = {}
-local touchEndPoint = {}
-
 local touchStartCell = {}
-local touchEndCell = {}
 
-local succCellSet = {}
 local switchCellSet = {}
 local fallCellSet = {}
 
 --用于存储执行交换结点
 local switchCellPair = {}
 
---执行各种函数的辅助node
-local RefreshBoardNode = nil
-local FallEndCheckNode = nil
+-- 分数显示label
 local ScoreLabel = nil
 
 --闪烁节点
-local blinkCell = nil
-
-local visibleSize = CCDirector:getInstance():getVisibleSize()
+local haveBlink = false
+local blinkSprite = nil
 
 --根据index创建某类型结点，不包含额外信息
 local function createNodeByIndex(index)
@@ -247,152 +246,130 @@ end
 local function removeCellSet(cellSet)
     local count = 0
     for k,v in pairs(cellSet) do
-        --CCLuaLog("remove.."..cellSet[i].x.."  "..cellSet[i].y)
+        --此时直接清除数据
+        --GameBoard[v.x][v.y] = 0
+
         local tag = 10 * v.x + v.y
         local node = scene:getChildByTag(NODE_TAG_START + tag)
-
-        --此时直接清除数据
-        node:setTag(REMOVED_TAG + tag)
-        GameBoard[v.x][v.y] = 0
-
-        node:runAction(CCCallFunc:create(cfMatchAndFade))
+        if node~=blinkSprite then
+            node:setTag(REMOVED_TAG + tag)
+            node:runAction(CCCallFunc:create(cfMatchAndFade))
+        end
         count = count + 1
     end
-    if count>7 then
-        scoreConf[count]=scoreConf[7]
-        CCLuaLog("为什么会出现大于7的情况呢?不可能的...因为有blink")
+
+    -- 全部下落完毕
+    local function cfFallDownEnd(node)
+        local tag = node:getTag()-NODE_TAG_START
+        local x = math.floor(tag/10)
+        local y = tag%10
+        --CCLuaLog("lastFallDown:",x,y)
+        table.remove(isFallIngTbl)
+        checkFallCellSet()
     end
-    TotalScore = TotalScore + scoreConf[count]
-    CCLuaLog("本次得分:"..scoreConf[count])
-    CCLuaLog("总得分:"..TotalScore)
-    updateScore()
-end
 
---匹配消除后刷新游戏面板
-local function cfRefreshBoard()
-    --CCLuaLog("cfRefreshBoard..")
-    local firstEmptyCell = nil
-    local addCellList = nil
-    local moveCellList = nil
-
-    firstEmptyCell, addCellList, moveCellList = getRefreshBoardData()
-
-    local actionNodeList = {}
-    --遍历每一列
-    for i = 1, GBoardSizeX do
-        if firstEmptyCell[i] ~= nil then
-            --CCLuaLog("firstEmptyCell.."..i..".."..firstEmptyCell[i].x..firstEmptyCell[i].y)
-            local nextDesCell = {x = firstEmptyCell[i].x, y = firstEmptyCell[i].y}
-            for j = 1, #(moveCellList[i]) do
-
-                local cell = {x = moveCellList[i][j].x, y = moveCellList[i][j].y}
-                --CCLuaLog("moveCellList"..i..".."..cell.x..cell.y)
-                local tag = 10 * cell.x + cell.y
-                local node = scene:getChildByTag(NODE_TAG_START + tag)
-
-                local desTag = 100 * GameBoard[cell.x][cell.y] + 10 * nextDesCell.x + nextDesCell.y
-                node:setTag(FALLING_TAG + desTag)
-
-                actionNodeList[#actionNodeList + 1] = {}
-                actionNodeList[#actionNodeList][1] = node
-                actionNodeList[#actionNodeList][2] = nextDesCell
-                nextDesCell = {x = nextDesCell.x, y = nextDesCell.y + 1}
-                --local desCell =
+    table.insert(isFallIngTbl,1)
+    fallCellSet = {}
+    local step = {}
+    local lastColumn = 1
+    for i=1,GBoardSizeX do
+        step[i] = 0
+        for j=1,GBoardSizeY do
+            local tag = 10*i+j
+            local node = scene:getChildByTag(NODE_TAG_START+tag)
+            if step[i]>0 and node then
+                local dstCell = {x=i,y=j-step[i]}
+                local dstPoint = getCellCenterPoint(dstCell)
+                local dstTag = 10*i+dstCell.y
+                --CCLuaLog("from:",tag,"to:",dstTag)
+                node:setTag(NODE_TAG_START+dstTag)
+                GameBoard[dstCell.x][dstCell.y] = GameBoard[i][j]
+                table.insert(fallCellSet,dstCell)
+                local move = CCMoveTo:create(0.1, CCPoint(dstPoint.x,dstPoint.y))
+                node:runAction(move)
             end
-
-            for j = 1, #(addCellList[i]) do
-                --CCLuaLog("addCellList"..i..".."..addCellList[i][j])
-
-                local node = createNodeByIndex(addCellList[i][j])
-                local bornPoint = getCellCenterPoint({x = i, y = 10})
-
-                node:setPosition(CCPoint(bornPoint.x, bornPoint.y))
-
-                --新加的结点tag中包含自己的index信息
-                local desTag = 100 * addCellList[i][j] + 10 * nextDesCell.x + nextDesCell.y
-                node:setTag(FALLING_TAG + desTag)
+            local key = i..","..j
+            if cellSet[key] then
+                step[i] = step[i] + 1
+            end
+        end
+        if step[i]>0 then
+            lastColumn = i
+        end
+    end
+    for i=1,GBoardSizeX do
+        if step[i]>0 then
+            for j=1,step[i] do
+                local dstCell = {x=i,y=GBoardSizeY-j+1}
+                table.insert(fallCellSet,dstCell)
+                --CCLuaLog("dstCell:",i,dstCell.y)
+                GameBoard[dstCell.x][dstCell.y] = getRandomIndex()
+                --CCLuaLog("dstIndex:",GameBoard[dstCell.x][dstCell.y])
+                local node = createNodeByCell(dstCell)
+                local srcCell = {x=i,y=GBoardSizeY-j+1+step[i]}
+                local srcPoint = getCellCenterPoint(srcCell)
+                node:setPosition(CCPoint(srcPoint.x,srcPoint.y))
+                --CCLuaLog("from:",i,GBoardSizeY)
                 scene:addChild(node)
-
-                actionNodeList[#actionNodeList + 1] = {}
-                actionNodeList[#actionNodeList][1] = node
-                actionNodeList[#actionNodeList][2] = nextDesCell
-                nextDesCell = {x = nextDesCell.x, y = nextDesCell.y + 1}
+                local dstPoint = getCellCenterPoint(dstCell)
+                --CCLuaLog("to:",i,dstCell.y)
+                local move = CCMoveTo:create(0.1,CCPoint(dstPoint.x,dstPoint.y))
+                if i~=lastColumn or j~=step[i] then
+                    node:runAction(move)
+                else
+                    local arrayOfActions = CCArray:create()
+                    arrayOfActions:addObject(move)
+                    arrayOfActions:addObject(CCCallFunc:create(cfFallDownEnd))
+                    local sequence = CCSequence:create(arrayOfActions)
+                    node:runAction(sequence)
+                end
             end
         end
     end
-
-    --移动完毕后的回调函数
-    local function cfOnFallDownEnd(node)
-        --CCLuaLog("fall down end...")
-        local tag = node:getTag() - FALLING_TAG
-        --CCLuaLog("tag.."..tag)
-        local index = math.modf(tag / 100)
-
-        --提取并去除index信息
-        tag = tag - index * 100
-        local x = math.modf(tag / 10)
-        local y = tag % 10
-
-        GameBoard[x][y] = index
-        --CCLuaLog("nowTag.."..tag)
-        node:setTag(NODE_TAG_START + tag)
-    end
-
-    --执行下落到棋盘操作
-    for i = 1, #actionNodeList do
-        local node = actionNodeList[i][1]
-        local desCell = actionNodeList[i][2]
-        local desPos = getCellCenterPoint(desCell)
-        local desPoint = CCPoint(desPos.x, desPos.y)
-
-        local arrayOfActions = CCArray:create()
-
-        local move = CCMoveTo:create(0.1, desPoint)
-        local fallDownEndFunc = CCCallFunc:create(cfOnFallDownEnd)
-
-        arrayOfActions:addObject(move)
-        arrayOfActions:addObject(fallDownEndFunc)
-
-        local sequence = CCSequence:create(arrayOfActions)
-
-        node:runAction(sequence)
-
-        --加入下落完成检测集合
-        fallCellSet[#fallCellSet + 1] = desCell
-    end
-
-    actionNodeList = {}
-
-    --下落后检查是否有新的命中
-    --FallEndCheckNode
-    local arrayOfActions = CCArray:create()
-
-    local delay = CCDelayTime:create(0.2)
-    local fallCheckFunc = CCCallFunc:create(cfCheckFallCell)
-
-    arrayOfActions:addObject(delay)
-    arrayOfActions:addObject(fallCheckFunc)
-
-    local sequence = CCSequence:create(arrayOfActions)
-
-    FallEndCheckNode:runAction(sequence)
+    local score = getScoreByCount(count)
+    TotalScore = TotalScore + score
+    updateScore()
 end
 
---延迟一段时间后刷新棋盘
-local function delayToRefreshBoardNode()
-    CCLuaLog("xxxxx1")
+--创建随机棋子下落到棋盘并改变棋盘数据
+local function addBlinkIconToBoard()
+    CCLuaLog("addBlinkIconToBoard")
+    --随机落到棋盘某个点并改变该点数据
+    local blinkCell = getRandomCell()
+
+    --提前修改棋盘数据防止过程中交换
+    GameBoard[blinkCell.x][blinkCell.y] = GBlinkIconIndex
+
+    local tag = 10 * blinkCell.x + blinkCell.y
+    local node = scene:getChildByTag(NODE_TAG_START + tag)
+    --CCLuaLog("node :", node)
+    node:removeFromParentAndCleanup(true)
+    blinkSprite:setTag(NODE_TAG_START + tag)
+
+    local blinkStartPoint = getCellCenterPoint({x = 6, y = 10})
+    blinkSprite:setPosition(blinkStartPoint.x, blinkStartPoint.y)
+    --CCLuaLog("addBlinkIconToBoard1")
+
+    local fallEndPoint = getCellCenterPoint(blinkCell)
+
     local arrayOfActions = CCArray:create()
 
-    local delay = CCDelayTime:create(0.2)
-    local refreshBoardFunc = CCCallFunc:create(cfRefreshBoard)
-
-    arrayOfActions:addObject(delay)
-    arrayOfActions:addObject(refreshBoardFunc)
-
-    local sequence = CCSequence:create(arrayOfActions)
-
-    RefreshBoardNode:runAction(sequence)
-    CCLuaLog("xxxxx2")
+    local move = CCMoveTo:create(0.1, CCPoint(fallEndPoint.x , fallEndPoint.y))
+    blinkSprite:runAction(move)
+    --CCLuaLog("addBlinkIconToBoard:end")
+    for i=1,GBoardSizeX do
+        local str = ""
+        for j=GBoardSizeY,1,-1 do
+            local tag = 10*i+j
+            local node = scene:getChildByTag(NODE_TAG_START + tag)
+            if node then
+                str = str .. tostring(node:getTag()).." "
+            else
+                str = str .."nilll "
+            end
+        end
+        CCLuaLog(str)
+    end
 end
 
 local function onCheckSuccess(succCellSet)
@@ -409,22 +386,16 @@ local function onCheckSuccess(succCellSet)
     local matchCellSet = {}
 
     --用于检测是否已加入
-    for i = 1, #succCellSet do
-        local succCell = succCellSet[i].cell
-        local succCellRes = succCellSet[i].result
-        local matchCellSetTmp = getMatchCellSet(succCell,succCellRes)
+    for k,v in pairs(succCellSet) do
+        local matchCellSetTmp = getMatchCellSet(v.cell,v.result)
         HXUtilMergeSet(matchCellSet,matchCellSetTmp)
     end
     removeCellSet(matchCellSet)
-    delayToRefreshBoardNode()
 end
 
 -- 点击blink
-local function onClickBlinkCell(cell)
+function onClickBlinkCell(cell)
     CCLuaLog("点击blink")
-    local tag = 10 * cell.x + cell.y
-    CCLuaLog("tag="..NODE_TAG_START+tag)
-    local node = scene:getChildByTag(NODE_TAG_START + tag)
     local animation = CCAnimationCache:getInstance():animationByName("blinkAnimation")
     local curAnimIdx = 0
     local array = animation:getFrames()
@@ -433,100 +404,51 @@ local function onClickBlinkCell(cell)
     for i=0,n do
         local animFrame = tolua.cast(array:objectAtIndex(i),"CCAnimationFrame")
         local spriteFrame = animFrame:getSpriteFrame()
-        CCLuaLog(i,animFrame,node,animFrame:getSpriteFrame())
-        if node:isFrameDisplayed(animFrame:getSpriteFrame()) then
-        --if node:getTexture():getName()==spriteFrame:getTexture():getName() then
+        CCLuaLog(i,animFrame,animFrame:getSpriteFrame())
+        if blinkSprite:isFrameDisplayed(animFrame:getSpriteFrame()) then
             curAnimIdx = i+1
             break
         end
     end
-    CCLuaLog("消除全部=",curAnimIdx)
     local matchCellSet = getMatchCellSetWithBlink(cell,curAnimIdx)
     removeCellSet(matchCellSet)
-    delayToRefreshBoardNode()
-    node:removeFromParentAndCleanup(true)
-end
-
---创建随机棋子下落到棋盘并改变棋盘数据
-local function addBlinkIconToBoard()
-
-    --在棋盘上显示该随机棋子
-    local blinkSprite = createBlinkIconSprite()
-    local blinkStartPoint = getCellCenterPoint({x = 6, y = 10})
-    blinkSprite:setPosition(blinkStartPoint.x, blinkStartPoint.y)
-    scene:addChild(blinkSprite)
-
-    --随机落到棋盘某个点并改变该点数据
-    math.randomseed(math.random(os.time()))
-    local x = math.random(GBoardSizeX)
-    local y = math.random(GBoardSizeY)
-
-    --提前修改棋盘数据防止过程中交换
-    GameBoard[x][y] = GBlinkIconIndex
-    blinkCell = {x = x, y = y}
-    CCLuaLog(blinkSprite:getTexture():getName())
-
-    local fallEndPoint = getCellCenterPoint({x = x, y = y})
-
-
-    local function cfblinkFallEnd()
-        local tag = 10 * blinkCell.x + blinkCell.y
-        local node = scene:getChildByTag(NODE_TAG_START + tag)
-        node:removeFromParentAndCleanup(true)
-        blinkSprite:setTag(NODE_TAG_START + tag)
-        local node = scene:getChildByTag(NODE_TAG_START+tag)
-    end
-
-    local arrayOfActions = CCArray:create()
-
-    local move = CCMoveTo:create(0.2, CCPoint(fallEndPoint.x , fallEndPoint.y))
-    local blinkFallEnd = CCCallFunc:create(cfblinkFallEnd)
-
-    arrayOfActions:addObject(move)
-    arrayOfActions:addObject(blinkFallEnd)
-
-    local sequence = CCSequence:create(arrayOfActions)
-
-    blinkSprite:runAction(sequence)
+    AudioEngine.playEffect("effect/A_combo1.wav")
+    CCLuaLog("消除全部=",curAnimIdx)
+    blinkSprite:setTag(1234567)
+    blinkSprite:setPosition(-100,-100)
+    CCLuaLog("这时候应该隐藏blink")
+    haveBlink = false
 end
 
 --检测落下的棋子是否命中
-function cfCheckFallCell()
-    CCLuaLog("cfCheckFallCell...")
-    local boardMovable , succList= checkBoardMovable()
-    if #succList <= 3 then
-        addBlinkIconToBoard()
-    end
-    --[[
-    if boardMovable then
-        CCLuaLog("checkBoardMovable true")
-        CCLuaLog("succList size : "..#succList)
-    else
-        CCLuaLog("checkBoardMovable false ")
-        addBlinkIconToBoard()
-    end
-    ]]
-
+function checkFallCellSet()
+--    CCLuaLog("cfCheckFallCell...")
     --复制为局部变量
     local checkSet = {}
-    for i = 1, #fallCellSet do
-        checkSet[#checkSet + 1] = fallCellSet[i]
+    for k,v in pairs(fallCellSet) do
+        table.insert(checkSet,v)
     end
-
-    --重置全局table
-    switchCellSet = {}
+    fallCellSet = {}
 
     --匹配成功的格子点
-    succCellSet = {}
-    for i = 1, #checkSet do
-        local canRemove,result = checkCell2(checkSet[i])
+    local succCellSet = {}
+    for k,v in pairs(checkSet) do
+        local canRemove,result = checkCell(v)
         if canRemove then
-            succCellSet[#succCellSet + 1] = {cell=checkSet[i],result=result}
+            table.insert(succCellSet,{cell=v,result=result})
         end
     end
 
     if #succCellSet ~= 0 then
         onCheckSuccess(succCellSet)
+    else
+        local boardMovable, succList= checkBoardMovable()
+        if #succList <= 3 then
+            if not haveBlink then
+                haveBlink = true
+                addBlinkIconToBoard()
+            end
+        end
     end
 end
 
@@ -548,9 +470,9 @@ function cfCheckSwitchCell()
     end
 
     --匹配成功的格子点
-    succCellSet = {}
+    local succCellSet = {}
     for i = 1, #checkSet do
-        local canRemove,result = checkCell2(checkSet[i])
+        local canRemove,result = checkCell(checkSet[i])
         if canRemove then
             succCellSet[#succCellSet + 1] = {cell=checkSet[i],result=result}
         end
@@ -575,10 +497,29 @@ local function createBackLayer()
     local backLayer = CCLayer:create()
 
     local backSprite = CCSprite:create("game_bg.png")
-    backSprite:setPosition(backSprite:getContentSize().width / 2, backSprite:getContentSize().height / 2)
+    local scalX = GVisibleSize.width/backSprite:getContentSize().width
+    local scalY = GVisibleSize.height/backSprite:getContentSize().height
+    backSprite:setScaleX(scalX)
+    backSprite:setScaleY(scalY)
+    backSprite:setPosition(GVisibleSize.width / 2, GVisibleSize.height / 2)
 
     backLayer:addChild(backSprite)
 
+    for k=0,60 do
+        local i = k%(GBoardSizeX+2)
+        local j = math.floor(k/(GBoardSizeX+2))+1
+        --CCLuaLog(i,j)
+        local color = Color4B(28,31,42,255)
+        if k%2==0 then
+            color = Color4B(37,40,51,255)
+        end
+        local color_layer = CCLayerColor:create(color)
+        local c_size = CCSize(GCellWidth,GCellWidth)
+        color_layer:setContentSize(c_size)
+        local p = getCellLeftDownPoint({x=i,y=j})
+        color_layer:setPosition(CCPoint(p.x,p.y))
+        backLayer:addChild(color_layer)
+    end
 
     return backLayer
 end
@@ -589,12 +530,12 @@ local function createTouchLayer()
     local touchColor = Color4B:new(255, 255, 255 ,0)
     local touchLayer = CCLayerColor:create(touchColor)
 
-    touchLayer:changeWidthAndHeight(visibleSize.width, visibleSize.height)
+    touchLayer:changeWidthAndHeight(GVisibleSize.width, GVisibleSize.height)
 
     local function onTouchBegan(x, y)
-        --CCLuaLog("touchLayerBegan: %.2f, %.2f", x, y)
+        --CCLuaLog("touchLayerBegan:",GVisibleSize.width, GVisibleSize.height, x, y)
         isTouching = true
-        touchStartPoint = {x = x, y = y}
+        --touchStartPoint = {x = x, y = y}
         touchStartCell = touchPointToCell(x, y)
         if curSelectTag ~= nil then
             local curSelectCell = {x = math.modf(curSelectTag / 10), y = curSelectTag % 10}
@@ -638,13 +579,16 @@ local function createTouchLayer()
 
     local function onTouchEnded(x, y)
         --CCLuaLog("touchLayerEnded: %.2f, %.2f", x, y)
-        touchEndPoint = {x = x, y = y}
-        touchEndCell = touchPointToCell(x, y)
+        --touchEndPoint = {x = x, y = y}
+        --touchEndCell = touchPointToCell(x, y)
         isTouching = false
     end
 
 
     local function onTouch(eventType, x, y)
+        if #isFallIngTbl>0 then
+            return
+        end
         if eventType == "began" then
             return onTouchBegan(x, y)
         elseif eventType == "moved" then
@@ -680,18 +624,24 @@ function CreateGameScene()
     scene:addChild(createTouchLayer(), 1000)
 
     --创建用于延迟执行刷新棋盘函数的节点
-    RefreshBoardNode = CCNode:create()
-    scene:addChild(RefreshBoardNode)
+    --RefreshBoardNode = CCNode:create()
+    --scene:addChild(RefreshBoardNode)
 
-    FallEndCheckNode = CCNode:create()
-    scene:addChild(FallEndCheckNode)
+    --FallEndCheckNode = CCNode:create()
+    --scene:addChild(FallEndCheckNode)
 
     -- 分数显示
     ScoreLabel = CCLabelTTF:create("Score : 0", "Marker Felt", 50)
     scene:addChild(ScoreLabel)
-    ScoreLabel:setPosition(visibleSize.width/2,visibleSize.height*0.9)
+    ScoreLabel:setPosition(GVisibleSize.width/2,GVisibleSize.height*0.9)
 
     TotalScore = 0
+
+    --在棋盘上显示该随机棋子
+    blinkSprite = createBlinkIconSprite()
+    blinkSprite:setPosition(-100, -100)
+    blinkSprite:setTag(1234567)
+    scene:addChild(blinkSprite)
 
     return scene
 end

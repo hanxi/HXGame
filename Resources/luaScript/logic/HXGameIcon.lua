@@ -1,3 +1,13 @@
+--[[=============================================================================
+#     FileName: HXGameIcon.lua
+#         Desc: 读取游戏图片资源
+#       Author: hanxi
+#        Email: hanxi.com@gmail.com
+#     HomePage: http://hanxi.cnblogs.com
+#      Version: 0.0.1
+#   LastChange: 2013-10-04 21:26:49
+#      History:
+=============================================================================]]
 --[[
 Copyright (c) 2013 crosslife <hustgeziyang@gmail.com>
 
@@ -31,11 +41,16 @@ end
 function getGameIconSprite(type, index)
     local iconFrame = CCSpriteFrameCache:getInstance():getSpriteFrameByName("icon"..type..index..".png")
     if iconFrame == nil then
-        print("icon"..type..index..".png")
-        print("iconFrame nil")
+        CCLuaLog("icon"..type..index..".png")
+        CCLuaLog("iconFrame nil")
         return
     end
     local iconSprite = CCSprite:createWithSpriteFrame(iconFrame)
+
+    local scalX = GCellWidth/confCellWidth
+    local scalY = GCellWidth/confCellWidth
+    iconSprite:setScaleX(scalX)
+    iconSprite:setScaleY(scalY)
     return iconSprite
 end
 
@@ -54,8 +69,8 @@ function createBlinkIconSprite()
         CCAnimationCache:getInstance():addAnimation(animation,"blinkAnimation")
     end
     local animate = CCAnimate:create(animation);
-
     iconSprite:runAction(CCRepeatForever:create(animate))
 
     return iconSprite
 end
+

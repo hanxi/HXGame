@@ -1,6 +1,6 @@
 --[[=============================================================================
 #     FileName: logic.lua
-#         Desc: 娓告垙閫昏緫鍑芥暟
+#         Desc: 游戏逻辑
 #       Author: hanxi
 #        Email: hanxi.com@gmail.com
 #     HomePage: http://hanxi.cnblogs.com
@@ -9,9 +9,8 @@
 #      History:
 =============================================================================]]
 
-require("HXGameBoardLogic")
 require("HXGameIcon")
+require("HXGameBoardLogic")
 require("HXGameScene")
 require("HXMainMenuScene")
-require("HXSplashScene")
 

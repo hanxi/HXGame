@@ -1,3 +1,13 @@
+--[[=============================================================================
+#     FileName: HXGameBoardLogic.lua
+#         Desc: 游戏算法
+#       Author: hanxi
+#        Email: hanxi.com@gmail.com
+#     HomePage: http://hanxi.cnblogs.com
+#      Version: 0.0.1
+#   LastChange: 2013-10-04 21:28:41
+#      History:
+=============================================================================]]
 --[[
 Copyright (c) 2013 crosslife <hustgeziyang@gmail.com>
 
@@ -21,14 +31,14 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
---require "Script/Config/CommonDefine"
-
 --初始棋盘所有格子index均为0
-GameBoard = {}
-for i = 1, GBoardSizeX do
-    GameBoard[i] = {}
-    for j = 1, GBoardSizeY do
-        GameBoard[i][j] = 0
+function GameBoardInit()
+    GameBoard = {}
+    for i = 1, GBoardSizeX do
+        GameBoard[i] = {}
+        for j = 1, GBoardSizeY do
+            GameBoard[i][j] = 0
+        end
     end
 end
 
@@ -48,7 +58,7 @@ function initGameBoard()
             repeat
                 math.randomseed(math.random(os.time()))
                 GameBoard[x][y] = math.random(GGameIconCount)
-            until checkCell2({x = x, y = y}) == false
+            until checkCell({x = x, y = y}) == false
         end
     end
 end
@@ -70,6 +80,14 @@ function touchPointToCell(x, y)
 end
 
 --获取某个格子的中心坐标
+function getCellLeftDownPoint(cell)
+    local point = {}
+    point.x = (cell.x - 1) * GCellWidth + GLeftBottomOffsetX
+    point.y = (cell.y - 1) * GCellWidth + GLeftBottomOffsetY
+    return point
+end
+
+--获取某个格子的中心坐标
 function getCellCenterPoint(cell)
     local point = {}
     point.x = (cell.x - 1) * GCellWidth + GLeftBottomOffsetX + GCellWidth / 2
@@ -88,33 +106,7 @@ function isTwoCellNearby(cellA, cellB)
     return ret
 end
 
---检查某个格子是否组成3连,根据GameBoard数据
-function checkCell(cell)
-    local x = cell.x
-    local y = cell.y
-
-    local index = GameBoard[x][y]
-
-    local ret = false
-
-    local cond = {}
-    cond[1] = x > 1 and GameBoard[x-1][y] == index
-    cond[2] = x > 2 and GameBoard[x-2][y] == index
-    cond[3] = x < GBoardSizeX and GameBoard[x+1][y] == index
-    cond[4] = x < GBoardSizeX-1 and GameBoard[x+2][y] == index
-    cond[5] = y > 1 and GameBoard[x][y-1] == index
-    cond[6] = y > 2 and GameBoard[x][y-2] == index
-    cond[7] = y < GBoardSizeY and GameBoard[x][y+1] == index
-    cond[8] = y < GBoardSizeY-1 and GameBoard[x][y+2] == index
-
-    if (cond[1] and cond[2]) or (cond[1] and cond[3]) or (cond[3] and cond[4]) or
-        (cond[5] and cond[6]) or (cond[5] and cond[7]) or (cond[7] and cond[8]) then
-        ret = true
-    end
-
-    return ret
-end
-
+-- 是否超出边界
 function isOverSize(x,y)
     if x<1 or x>GBoardSizeX
         or y<1 or y>GBoardSizeY then
@@ -124,7 +116,7 @@ function isOverSize(x,y)
 end
 
 -- 检查某个格子是否组成3连,算法2:可计算出消除元素
-function checkCell2(cell)
+function checkCell(cell)
     local x = cell.x
     local y = cell.y
     if isOverSize(x,y) then
@@ -247,128 +239,20 @@ function getMatchCellSetWithBlink(cell,index)
     return cellSet
 end
 
---获得与某个格子同色相连的格子集合
-function getNearbyCellSet(cell)
-    local x = cell.x
-    local y = cell.y
-    local index = GameBoard[x][y]
-
-    local cellSet = {}
-    cellSet[#cellSet + 1] = {x = x, y = y}
-
-    local assArray = {}
-    local function addCellToSet(cell)
-        if assArray[10 * cell.x + cell.y] == nil then
-            cellSet[#cellSet + 1] = cell
-            assArray[10 * cell.x + cell.y] = true
-        end
-    end
-
-    local cond = {}
-    cond[1] = x > 1 and GameBoard[x-1][y] == index
-    cond[2] = x > 2 and GameBoard[x-2][y] == index
-    cond[3] = x < GBoardSizeX and GameBoard[x+1][y] == index
-    cond[4] = x < GBoardSizeX-1 and GameBoard[x+2][y] == index
-    cond[5] = y > 1 and GameBoard[x][y-1] == index
-    cond[6] = y > 2 and GameBoard[x][y-2] == index
-    cond[7] = y < GBoardSizeY and GameBoard[x][y+1] == index
-    cond[8] = y < GBoardSizeY-1 and GameBoard[x][y+2] == index
-
-    if cond[1] and cond[2] then
-        addCellToSet({x = x-1, y = y})
-        addCellToSet({x = x-2, y = y})
-    end
-
-    if cond[1] and cond[3] then
-        addCellToSet({x = x-1, y = y})
-        addCellToSet({x = x+1, y = y})
-    end
-
-    if cond[3] and cond[4] then
-        addCellToSet({x = x+1, y = y})
-        addCellToSet({x = x+2, y = y})
-    end
-
-    if cond[5] and cond[6] then
-        addCellToSet({x = x, y = y-1})
-        addCellToSet({x = x, y = y-2})
-    end
-
-    if cond[5] and cond[7] then
-        addCellToSet({x = x, y = y-1})
-        addCellToSet({x = x, y = y+1})
-    end
-
-    if cond[7] and cond[8] then
-        addCellToSet({x = x, y = y+1})
-        addCellToSet({x = x, y = y+2})
-    end
-
-    return cellSet
+-- 获取随机位置
+function getRandomCell()
+    --随机落到棋盘某个点并改变该点数据
+    math.randomseed(math.random(os.time()))
+    local x = math.random(GBoardSizeX)
+    local y = math.random(GBoardSizeY)
+    return {x=x,y=y}
 end
 
---根据消除后的面板计算出棋子落下相关数据
-function getRefreshBoardData()
-
-    --记录每列中最下面的空格
-    local firstEmptyCell = {}
-
-    --记录每列所需要增加的数据
-    local addCellList = {}
-
-    --记录每列需要移动的棋子
-    local moveCellList = {}
-
-    for i = 1, GBoardSizeX do
-        for j = 1, GBoardSizeY do
-            if GameBoard[i][j] == 0 then
-                if firstEmptyCell[i] == nil then
-                    firstEmptyCell[i] = {x = i, y = j}
-                end
-
-                --随机生成index并加入对应列的addList
-                math.randomseed(math.random(os.time()))
-                local addIconIndex = math.random(GGameIconCount)
-
-                if addCellList[i] == nil then
-                    addCellList[i] = {}
-                end
-                addCellList[i][#(addCellList[i]) + 1] = addIconIndex
-            else
-                if moveCellList[i] == nil then
-                    moveCellList[i] = {}
-                end
-                --判断是否已经检索到空节点
-                if firstEmptyCell[i] ~= nil then
-                    moveCellList[i][#(moveCellList[i]) + 1] = {x = i, y = j}
-                end
-            end
-        end
-    end
-
-    return firstEmptyCell, addCellList, moveCellList
-end
-
--- 填充棋盘
+-- 获取随机图标index
 function getRandomIndex()
     math.randomseed(math.random(os.time()))
     local addIconIndex = math.random(GGameIconCount)
     return addIconIndex
-end
--- 将新添加的格式移动到最上面
-function moveNewCellToUp(cellSet)
-    for x=1,GBoardSizeX do
-        for y=1,GBoardSizeY do
-            local key = x..","..y
-            if cellSet[key] then
-                local tmp = GameBoard[x][y]
-                for k=y,GBoardSizeY-1 do
-                    GameBoard[x][k] = GameBoard[x][k+1]
-                end
-                GameBoard[x][GBoardSizeY] = tmp
-            end
-        end
-    end
 end
 
 --检测棋盘有无可移动消除棋子
@@ -380,7 +264,7 @@ function checkBoardMovable()
         local ret = false
 
         GameBoard[cellA.x][cellA.y], GameBoard[cellB.x][cellB.y] = GameBoard[cellB.x][cellB.y], GameBoard[cellA.x][cellA.y]
-        ret = checkCell2(cellA) or checkCell2(cellB)
+        ret = checkCell(cellA) or checkCell(cellB)
         GameBoard[cellA.x][cellA.y], GameBoard[cellB.x][cellB.y] = GameBoard[cellB.x][cellB.y], GameBoard[cellA.x][cellA.y]
 
         return ret
@@ -417,3 +301,8 @@ function checkBoardMovable()
 
     return ret, succList
 end
+
+function getScoreByCount(count)
+    return 2^count
+end
+

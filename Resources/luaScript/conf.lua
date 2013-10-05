@@ -9,33 +9,17 @@
 #      History:
 =============================================================================]]
 
--- 全局变量
-GBackGroundWidth = 712
-GBackGroundHeight = 1024
+-- 图片宽度
+confBackImgWidth = 712
 
-GLeftBottomOffsetX = 42
-GLeftBottomOffsetY = 100
+-- 格子大小
+confCellWidth = 90
 
-GCellWidth = 90
+-- 坐标开始摆放格子
+confLeftBottomOffsetImgX = 41
+confLeftBottomOffsetImgY = 100
 
-GBoardSizeX = 7
-GBoardSizeY = 7
-
-GGameIconCount = 7
-GBlinkIconIndex = 21
-
-GBackGroundMiddlePoint = {x = 356, y = 512}
-
-GIconNormalType = 1
-GIconCryType = 2
-GIconMatchType = 3
-GIconSelectType = 4
-
--- 分数
-TotalScore = 0
-scoreConf = {}
-for i=3,7 do
-    scoreConf[i] = 2^(i-2)
-end
-
+-- 背景图允许图标格子数
+confBoardSizeX = 7
+confBoardSizeY = 7
 

@@ -1,3 +1,13 @@
+--[[=============================================================================
+#     FileName: HXMainMenuScene.lua
+#         Desc: 游戏主菜单
+#       Author: hanxi
+#        Email: hanxi.com@gmail.com
+#     HomePage: http://hanxi.cnblogs.com
+#      Version: 0.0.1
+#   LastChange: 2013-10-04 21:29:09
+#      History:
+=============================================================================]]
 --[[
 Copyright (c) 2013 crosslife <hustgeziyang@gmail.com>
 
@@ -21,16 +31,16 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
---require("Script/Scene/GameScene")
 
-
-local visibleSize = CCDirector:getInstance():getVisibleSize()
 local function createBackLayer()
     local backLayer = CCLayer:create()
 
     local menuSprite = CCSprite:create("menu_bg.png")
-
-    menuSprite:setPosition(menuSprite:getContentSize().width / 2, menuSprite:getContentSize().height / 2)
+    local scalX = GVisibleSize.width/menuSprite:getContentSize().width
+    local scalY = GVisibleSize.height/menuSprite:getContentSize().height
+    menuSprite:setScaleX(scalX)
+    menuSprite:setScaleY(scalY)
+    menuSprite:setPosition(GVisibleSize.width / 2, GVisibleSize.height / 2)
 
     backLayer:addChild(menuSprite)
 
@@ -68,7 +78,7 @@ local function createBackLayer()
     itemExit:setColor( Color3B(0,200,255) )
 
     local menu = CCMenu:create()
-    menu:setPosition(CCPoint(visibleSize.width / 2, visibleSize.height/2))
+    menu:setPosition(CCPoint(GVisibleSize.width / 2, GVisibleSize.height/2))
     menu:addChild(item)
     menu:addChild(itemExit)
 

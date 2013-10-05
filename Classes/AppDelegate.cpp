@@ -28,9 +28,29 @@ bool AppDelegate::applicationDidFinishLaunching()
 {
     // initialize director
     auto pDirector = Director::getInstance();
-    pDirector->setOpenGLView(EGLView::getInstance());
+    auto pEGLView = EGLView::getInstance();
+    pDirector->setOpenGLView(pEGLView);
 
-    EGLView::getInstance()->setDesignResolutionSize(712, 1024, ResolutionPolicy::NO_BORDER);
+    // 获得方向，960是资源最大边的长度
+    float maxSide = 1024.0f;
+    float standardSide = maxSide;
+    const Size& winSizeInPixels = pDirector->getWinSizeInPixels();
+    int orientation = winSizeInPixels.width > winSizeInPixels.height ? 0 : 1;
+
+    // 横向和纵向的时候处理方法相反
+    float scale = winSizeInPixels.width / standardSide;
+    float screenSizeWidth = standardSide;
+    float screenSizeHeight = winSizeInPixels.height / scale;
+    if (orientation == 1)
+    {
+        scale = winSizeInPixels.height / standardSide;
+        screenSizeHeight = standardSide;
+        screenSizeWidth = winSizeInPixels.width / scale;
+    }
+    //kResolutionExactFit
+    //NO_BORDER
+    //EXACT_FIT
+    pEGLView->setDesignResolutionSize(screenSizeWidth, screenSizeHeight, ResolutionPolicy::NO_BORDER);
 
     // turn off display FPS
     pDirector->setDisplayStats(false);
