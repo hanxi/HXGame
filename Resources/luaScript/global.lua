@@ -34,3 +34,13 @@ GIconSelectType = 4
 -- 分数
 GTotalScore = 0
 
+-- blink次数
+GBlinkCount = 0
+
+GBlinkCell = {x=7,y=9}
+
+-- 剩余掉落icon个数
+GLeftFallCount = 0
+
+GLeftIconCell = {x=1,y=9}
+

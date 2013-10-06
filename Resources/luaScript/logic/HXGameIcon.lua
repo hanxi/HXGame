@@ -38,10 +38,10 @@ function loadGameIcon()
 end
 
 --获取某个棋子
-function getGameIconSprite(type, index)
-    local iconFrame = CCSpriteFrameCache:getInstance():getSpriteFrameByName("icon"..type..index..".png")
+function getGameIconSprite(iconType, index)
+    local iconFrame = CCSpriteFrameCache:getInstance():getSpriteFrameByName("icon"..iconType..index..".png")
     if iconFrame == nil then
-        CCLuaLog("icon"..type..index..".png")
+        CCLuaLog("icon"..iconType..index..".png")
         CCLuaLog("iconFrame nil")
         return
     end
@@ -55,18 +55,18 @@ function getGameIconSprite(type, index)
 end
 
 --创建随机变换的棋子
-function createBlinkIconSprite()
+function createBlinkIconSprite(iconType)
     local iconSprite = getGameIconSprite(4, 1)
-    local animation = CCAnimationCache:getInstance():animationByName("blinkAnimation")
+    local animation = CCAnimationCache:getInstance():animationByName("blinkAnimation"..iconType)
     if animation==nil then
         local animFrames = CCArray:create()
         for i=1, GGameIconCount do
-            local iconFrame = CCSpriteFrameCache:getInstance():getSpriteFrameByName("icon4"..i..".png")
+            local iconFrame = CCSpriteFrameCache:getInstance():getSpriteFrameByName("icon"..iconType..i..".png")
             animFrames:addObject(iconFrame)
         end
 
         animation = CCAnimation:createWithSpriteFrames(animFrames, 0.1)
-        CCAnimationCache:getInstance():addAnimation(animation,"blinkAnimation")
+        CCAnimationCache:getInstance():addAnimation(animation,"blinkAnimation"..iconType)
     end
     local animate = CCAnimate:create(animation);
     iconSprite:runAction(CCRepeatForever:create(animate))

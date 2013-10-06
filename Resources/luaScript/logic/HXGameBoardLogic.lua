@@ -64,6 +64,17 @@ function initGameBoard()
 end
 
 --触摸点转化为棋盘格子点
+function touchPointToCellNoCechk(x, y)
+    local cellX = math.modf((x - GLeftBottomOffsetX) / GCellWidth)
+    local cellY = math.modf((y - GLeftBottomOffsetY) / GCellWidth)
+    local cell = {}
+    cell.x = cellX + 1
+    cell.y = cellY + 1
+
+    return cell
+end
+
+--触摸点转化为棋盘格子点
 function touchPointToCell(x, y)
     local cellX = math.modf((x - GLeftBottomOffsetX) / GCellWidth)
     local cellY = math.modf((y - GLeftBottomOffsetY) / GCellWidth)
@@ -224,10 +235,8 @@ function getMatchCellSet(cell,res)
 end
 
 -- 获取可消除格子,根据blink
-function getMatchCellSetWithBlink(cell,index)
+function getMatchCellSetWithBlink(index)
     local cellSet = {}
-    local key = cell.x..","..cell.y
-    cellSet[key] = {x=cell.x,y=cell.y}
     for x=1,GBoardSizeX do
         for y=1,GBoardSizeY do
             if GameBoard[x][y]==index then
